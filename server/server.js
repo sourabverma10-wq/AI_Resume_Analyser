@@ -7,9 +7,21 @@ import candidateRoutes from './routes/candidates.js';
 import adminRoutes from './routes/admin.js';
 
 const app = express();
-app.use(cors());
+const localOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+const configuredOrigins = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+const allowedOrigins = new Set([...localOrigins, ...configuredOrigins]);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    return callback(new Error('Origin is not allowed by CORS.'));
+  }
+}));
 app.use(express.json());
-app.get('/api/health', (request, response) => response.json({ message: 'API is running' }));
+app.get('/api/health', (request, response) => response.json({ status: 'ok' }));
 app.use('/api/analyze', analyzeRoutes);
 app.use('/api/candidates', candidateRoutes);
 app.use('/api/admin', adminRoutes);
@@ -19,4 +31,4 @@ app.use((error, request, response, next) => {
 });
 
 const port = process.env.PORT || 5000;
-app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
+app.listen(port, '0.0.0.0', () => console.log(`Server listening on port ${port}`));
