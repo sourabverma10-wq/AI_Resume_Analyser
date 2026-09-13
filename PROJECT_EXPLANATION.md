@@ -819,36 +819,19 @@ Open the Vite URL, normally `http://localhost:5173`. Test the backend separately
 
 ## 11. Deployment explanation
 
-### Netlify frontend
+### Netlify frontend and backend
 
 - Base directory: `client`
-- Build command: `npm run build`
+- Build command: `npm install; npm install --prefix ../server; npm run build`
 - Publish directory: `dist`
-- Environment variable: `VITE_API_URL=https://YOUR-RENDER-SERVICE.onrender.com/api`
+- Function directory: `server/netlify/functions`
+- Environment variables: `FRONTEND_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and optional AI settings
 
-The `client/public/_redirects` file contains `/* /index.html 200`, which makes Netlify send browser routes to the React entry page instead of returning a 404.
+The `client/public/_redirects` file sends `/api/*` to the Netlify Function and sends other browser routes to `index.html`.
 
-### Render backend
+`server/server.js` exports the Express app for both local development and Netlify. `server/netlify/functions/api.js` adapts that app to Netlify's Function handler. In production, the browser calls `/api/analyze` on the same Netlify domain, and the redirect passes it to Express.
 
-- The root `render.yaml` file defines the service configuration, including `server` as the root directory and `/api/health` as the health check.
-- Root directory: `server`
-- Build command: `npm install`
-- Start command: `npm start`
-- `FRONTEND_URL`: the exact Netlify site URL
-- `ADMIN_USERNAME` and `ADMIN_PASSWORD`: production admin credentials
-- Optional `AI_API_KEY`, `AI_API_URL`, and `AI_MODEL`
-
-Render supplies `PORT`. The server listens on `0.0.0.0`, which allows the hosted service to receive traffic.
-
-### Deployment request path
-
-If the Render service URL is `https://resume-api.onrender.com`, the Netlify variable must be:
-
-```text
-VITE_API_URL=https://resume-api.onrender.com/api
-```
-
-The analyzer then calls `https://resume-api.onrender.com/api/analyze`, and the other frontend requests use the same `/api` base.
+In production, do not set `VITE_API_URL`; the frontend's default `/api` value is correct. The health check is `https://your-site.netlify.app/api/health`.
 
 ## 12. Important limitations
 

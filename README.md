@@ -182,17 +182,17 @@ Postman is also suitable: select `POST`, choose `Body > form-data`, add the text
 | PDF has no readable text | Use a text-based PDF. Scanned image PDFs need OCR, which this beginner version intentionally does not include. |
 | AI explanation unavailable | Check `AI_API_KEY` and internet access. The local fallback should still return a result. |
 | Admin login fails | Use the exact `ADMIN_USERNAME` and `ADMIN_PASSWORD` values in `.env`. |
-| CORS or network error | In production, confirm the Render backend is running, `FRONTEND_URL` exactly matches the Netlify URL, and Netlify has `VITE_API_URL` set to the Render URL ending in `/api`. Locally, confirm the backend is running on port 5000 and the frontend on port 5173. |
+| CORS or network error | Confirm the Netlify deploy included the Function and that `FRONTEND_URL` exactly matches the Netlify URL. Locally, confirm the backend is running on port 5000 and the frontend on port 5173. |
 
 ## Deploy the backend
 
-Netlify hosts the React frontend, but it does not run the long-lived Express process in `server/server.js`. Deploy the backend as a separate Render web service:
+The frontend and backend now deploy together on Netlify. The Express app is wrapped by `server/netlify/functions/api.js`, and `client/public/_redirects` sends every `/api/*` request to that Function.
 
-1. Push this repository to GitHub and create a new Render Blueprint using the repository. Render detects the root `render.yaml` file and creates the API service with `server` as its root directory.
-2. In the Render service environment settings, set `FRONTEND_URL` to the exact Netlify site URL, for example `https://your-site.netlify.app`.
-3. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD`. Leave `AI_API_KEY` empty if the local fallback explanations are sufficient.
-4. After deployment, open `https://YOUR-RENDER-SERVICE.onrender.com/api/health`. It must return `{"status":"ok"}`.
-5. In Netlify, set `VITE_API_URL` to `https://YOUR-RENDER-SERVICE.onrender.com/api` and trigger a new frontend deploy. Vite embeds this value at build time, so changing it requires a rebuild.
+1. Push the project to GitHub and import the repository into Netlify.
+2. Set the Netlify base directory to `client`. The included `netlify.toml` already sets the build command, publish directory, and Function directory.
+3. Add these Netlify environment variables: `FRONTEND_URL=https://your-site.netlify.app`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and optionally `AI_API_KEY`, `AI_API_URL`, and `AI_MODEL`.
+4. Deploy the site. Open `https://your-site.netlify.app/api/health`; it must return `{"status":"ok"}`.
+5. Do not set `VITE_API_URL` in production. The default `/api` value is correct because the frontend and Function use the same Netlify domain.
 
 ## Viva questions and easy answers
 

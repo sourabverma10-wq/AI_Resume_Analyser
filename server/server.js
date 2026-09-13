@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import analyzeRoutes from './routes/analyze.js';
+import analyzeRoutes from './routes/analyzeiske.js';
 import candidateRoutes from './routes/candidates.js';
 import adminRoutes from './routes/admin.js';
 
@@ -30,5 +30,9 @@ app.use((error, request, response, next) => {
   response.status(500).json({ message: 'Something went wrong on the server.' });
 });
 
-const port = process.env.PORT || 5000;
-app.listen(port, '0.0.0.0', () => console.log(`Server listening on port ${port}`));
+export default app;
+
+if (!process.env.NETLIFY) {
+  const port = process.env.PORT || 5000;
+  app.listen(port, '0.0.0.0', () => console.log(`Server listening on port ${port}`));
+}
