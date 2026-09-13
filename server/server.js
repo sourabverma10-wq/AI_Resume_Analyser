@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import analyzeRoutes from './routes/analyzeiske.js';
+import analyzeRoutes from './routes/analyze.js';
 import candidateRoutes from './routes/candidates.js';
 import adminRoutes from './routes/admin.js';
 
