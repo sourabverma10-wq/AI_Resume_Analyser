@@ -182,7 +182,17 @@ Postman is also suitable: select `POST`, choose `Body > form-data`, add the text
 | PDF has no readable text | Use a text-based PDF. Scanned image PDFs need OCR, which this beginner version intentionally does not include. |
 | AI explanation unavailable | Check `AI_API_KEY` and internet access. The local fallback should still return a result. |
 | Admin login fails | Use the exact `ADMIN_USERNAME` and `ADMIN_PASSWORD` values in `.env`. |
-| CORS or network error | Confirm the backend is running on port 5000 and the frontend on port 5173. |
+| CORS or network error | In production, confirm the Render backend is running, `FRONTEND_URL` exactly matches the Netlify URL, and Netlify has `VITE_API_URL` set to the Render URL ending in `/api`. Locally, confirm the backend is running on port 5000 and the frontend on port 5173. |
+
+## Deploy the backend
+
+Netlify hosts the React frontend, but it does not run the long-lived Express process in `server/server.js`. Deploy the backend as a separate Render web service:
+
+1. Push this repository to GitHub and create a new Render Blueprint using the repository. Render detects the root `render.yaml` file and creates the API service with `server` as its root directory.
+2. In the Render service environment settings, set `FRONTEND_URL` to the exact Netlify site URL, for example `https://your-site.netlify.app`.
+3. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD`. Leave `AI_API_KEY` empty if the local fallback explanations are sufficient.
+4. After deployment, open `https://YOUR-RENDER-SERVICE.onrender.com/api/health`. It must return `{"status":"ok"}`.
+5. In Netlify, set `VITE_API_URL` to `https://YOUR-RENDER-SERVICE.onrender.com/api` and trigger a new frontend deploy. Vite embeds this value at build time, so changing it requires a rebuild.
 
 ## Viva questions and easy answers
 

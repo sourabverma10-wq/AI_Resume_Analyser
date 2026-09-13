@@ -1,7 +1,7 @@
-  import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const API = 'http://localhost:5000/api';
+const API = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 const emptyForm = { name: '', email: '', phone: '', jobDescription: '', resume: null };
 
 function Layout({ children, navigate }) {
@@ -9,20 +9,29 @@ function Layout({ children, navigate }) {
 }
 
 function Home({ navigate }) {
-  return <section className="hero"><div className="eyebrow">RESUME INTELLIGENCE</div><h1>Find out how ready your resume is for the next role.</h1><p>Upload a PDF, add a job description, and get a clear skill match report powered by keyword analysis and helpful AI explanations.</p><button className="primary" onClick={() => navigate('analyze')}>Analyze my resume <b>→</b></button><div className="hero-note"><span>✓</span> Private by design: we store extracted text, not the uploaded file.</div></section>;
+  return <section className="hero"><div className="eyebrow">RESUME INTELLIGENCE</div><h1>Find out how ready your resume is for the next role.</h1>
+  <p>Upload a PDF, add a job description, and get a clear skill match report powered by keyword analysis and helpful AI explanations.</p>
+  <button className="primary" onClick={() => navigate('analyze')}>Analyze my resume <b>→</b></button>
+  <div className="hero-note"><span>✓</span> Private by design: we store extracted text, not the uploaded file.</div>
+  </section>;
 }
 
 function Analyzer({ navigate, setResult }) {
-  const [form, setForm] = useState(emptyForm); const [loading, setLoading] = useState(false); const [error, setError] = useState('');
+  const [form, setForm] = useState(emptyForm); const [loading, setLoading] = useState(false); 
+  const [error, setError] = useState('');
   const update = event => setForm({ ...form, [event.target.name]: event.target.type === 'file' ? event.target.files[0] : event.target.value });
-  const submit = async event => { event.preventDefault(); setError(''); setLoading(true); const data = new FormData(); Object.entries(form).forEach(([key, value]) => data.append(key, value || '')); try { const response = await axios.post(`${API}/analyze`, data); setResult(response.data); navigate('results'); } catch (requestError) { setError(requestError.response?.data?.message || 'Could not analyze the resume. Is the server running?'); } finally { setLoading(false); } };
-  return <section className="form-page"><div className="eyebrow">ANALYZE RESUME</div><h1>Match your experience to an opportunity.</h1><p className="lead">The score is calculated by comparing important job-description keywords with your resume.</p><form onSubmit={submit} className="panel"><div className="form-grid"><label>Candidate name<input name="name" value={form.name} onChange={update} placeholder="e.g. Priya Sharma" required /></label><label>Email address<input type="email" name="email" value={form.email} onChange={update} placeholder="you@example.com" required /></label><label>Phone <small>(optional)</small><input name="phone" value={form.phone} onChange={update} placeholder="+91 98765 43210" /></label><label>Resume PDF<input type="file" name="resume" onChange={update} accept="application/pdf,.pdf" required /></label></div><label>Job description<textarea name="jobDescription" value={form.jobDescription} onChange={update} placeholder="Paste the role description here..." required /></label>{error && <div className="error">{error}</div>}<button className="primary" disabled={loading}>{loading ? 'Analyzing...' : 'Analyze Resume'} <b>→</b></button></form></section>;
+  const submit = async event => { event.preventDefault(); setError(''); setLoading(true);
+  const data = new FormData(); Object.entries(form).forEach(([key, value]) => data.append(key, value || '')); try { const response = await axios.post(`${API}/analyze`, data); setResult(response.data); navigate('results'); } catch (requestError) { setError(requestError.response?.data?.message || 'Could not analyze the resume. Is the server running?'); } finally { setLoading(false); } };
+  return <section className="form-page"><div className="eyebrow">ANALYZE RESUME</div><h1>Match your experience to an opportunity.</h1><p className="lead">The score is calculated by comparing important job-description keywords with your resume.</p><form onSubmit={submit} className="panel"><div className="form-grid"><label>Candidate name<input name="name" value={form.name} onChange={update} placeholder="e.g. your name" required /></label><label>Email address<input type="email" name="email" value={form.email} onChange={update} placeholder="you@example.com" required /></label><label>Phone <small>(optional)</small><input name="phone" value={form.phone} onChange={update} placeholder="+91 98765 43210" /></label><label>Resume PDF<input type="file" name="resume" onChange={update} accept="application/pdf,.pdf" required /></label></div><label>Job description<textarea name="jobDescription" value={form.jobDescription} onChange={update} placeholder="Paste the role description here..." required /></label>{error && <div className="error">{error}</div>}<button className="primary" disabled={loading}>{loading ? 'Analyzing...' : 'Analyze Resume'} <b>→</b></button></form></section>;
 }
 
 function List({ title, items, tone }) { return <div className="list-block"><h3>{title}</h3><div className={tone || ''}>{items?.length ? items.map((item, index) => <span className="tag" key={`${item}-${index}`}>{item}</span>) : <span className="muted">None found</span>}</div></div>; }
 function Results({ result, navigate }) {
-  if (!result) return <section className="empty"><h1>No analysis yet</h1><button className="primary" onClick={() => navigate('analyze')}>Start analysis</button></section>;
-  return <section className="results"><button className="back" onClick={() => navigate('analyze')}>← New analysis</button><div className="result-heading"><div><div className="eyebrow">ANALYSIS REPORT</div><h1>{result.name}</h1><p>{result.email} {result.phone && `· ${result.phone}`}</p></div><div className="score"><strong>{result.matchScore}%</strong><span>Match score</span></div></div><div className="score-bar"><i style={{ width: `${result.matchScore}%` }} /></div><div className="result-grid"><div className="panel"><List title="Matching skills" items={result.matchingSkills} tone="good" /><List title="Missing skills" items={result.missingSkills} tone="missing" /></div><div className="panel"><List title="Resume strengths" items={result.strengths} /><List title="Resume weaknesses" items={result.weaknesses} /><List title="Suggestions" items={result.suggestions} /></div></div></section>;
+  if (!result) return <section className="empty"><h1>No analysis yet</h1>
+  <button className="primary" onClick={() => navigate('analyze')}>Start analysis</button></section>;
+  return <section className="results"><button className="back" onClick={() => navigate('analyze')}>← New analysis</button>
+  <div className="result-heading"><div>
+  <div className="eyebrow">ANALYSIS REPORT</div><h1>{result.name}</h1><p>{result.email} {result.phone && `· ${result.phone}`}</p></div><div className="score"><strong>{result.matchScore}%</strong><span>Match score</span></div></div><div className="score-bar"><i style={{ width: `${result.matchScore}%` }} /></div><div className="result-grid"><div className="panel"><List title="Matching skills" items={result.matchingSkills} tone="good" /><List title="Missing skills" items={result.missingSkills} tone="missing" /></div><div className="panel"><List title="Resume strengths" items={result.strengths} /><List title="Resume weaknesses" items={result.weaknesses} /><List title="Suggestions" items={result.suggestions} /></div></div></section>;
 }
 
 function Admin({ navigate }) { const [login, setLogin] = useState({ username: '', password: '' }); const [error, setError] = useState(''); const submit = async event => { event.preventDefault(); try { await axios.post(`${API}/admin/login`, login); navigate('dashboard'); } catch { setError('Invalid admin username or password.'); } }; return <section className="login"><div className="eyebrow">HR ACCESS</div><h1>Welcome back.</h1><p className="lead">Sign in to review submitted resume analyses.</p><form className="panel" onSubmit={submit}><label>Username<input value={login.username} onChange={e => setLogin({ ...login, username: e.target.value })} required /></label><label>Password<input type="password" value={login.password} onChange={e => setLogin({ ...login, password: e.target.value })} required /></label>{error && <div className="error">{error}</div>}<button className="primary">Open dashboard <b>→</b></button></form><p className="hint">Demo credentials are configured in the server .env file.</p></section>; }

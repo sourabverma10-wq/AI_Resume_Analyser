@@ -14,7 +14,7 @@ The app does this:
 - Displays strengths, weaknesses, and suggestions
 - Saves each candidate result temporarily in the server
 - Lets an admin log in and review candidate submissions
-
+  
 This is a beginner-friendly project and is designed to be easy to understand.
 
 ---
@@ -31,7 +31,7 @@ This is a beginner-friendly project and is designed to be easy to understand.
 - client/src/main.jsx - starts the React app
 - client/src/styles.css - styling for the UI
 
-### Backend files
+### Backend files 
 
 - server/server.js - starts Express server and sets up routes
 - server/routes/analyze.js - handles PDF upload and resume analysis
@@ -77,10 +77,10 @@ import axios from 'axios';
 ### API base URL
 
 ```jsx
-const API = 'http://localhost:5000/api';
+const API = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 ```
 
-This tells the frontend where the backend lives.
+This tells the frontend where the backend lives. In local development, `client/.env` can contain `VITE_API_URL=http://localhost:5000/api`. In Netlify, set `VITE_API_URL` to the deployed backend URL ending in `/api`.
 
 - The backend server runs on port 5000.
 - The frontend sends requests to routes like `/api/analyze` and `/api/candidates`.
@@ -658,15 +658,14 @@ Finally, the active content is wrapped inside the shared layout.
 
 This file creates the Express app and starts the server.
 
-It usually does the following:
+It does the following:
 
-- Load environment variables
-- Set middleware for JSON parsing and CORS
-- Connect routes:
-  - /api/analyze
-  - /api/candidates
-  - /api/admin
-- Start listening on a port
+- Loads environment variables from `server/.env`.
+- Allows the local frontend and the origin in `FRONTEND_URL` through CORS.
+- Parses JSON request bodies.
+- Registers the `/api/health`, `/api/analyze`, `/api/candidates`, and `/api/admin` routes.
+- Handles Multer upload errors, including files larger than 5 MB.
+- Listens on `process.env.PORT || 5000` and binds to `0.0.0.0` for hosting platforms.
 
 ### server/routes/analyze.js
 
@@ -726,3 +725,135 @@ It is a very practical beginner project because it combines frontend and backend
 This project is a resume matching system. It lets users upload a resume, compare it with a job description, view a percentage match score, and inspect suggestions and weaknesses. The backend holds candidate data in memory, and the HR dashboard lets the admin review the results.
 
 The main file that powers the frontend is App.jsx, and it is an excellent example of how React state, forms, API requests, and page navigation work together.
+
+---
+
+## 8. Complete request flow
+
+### Resume analysis flow
+
+```text
+User selects a PDF and enters form data
+  |
+  v
+App.jsx creates FormData
+  |
+  | POST {VITE_API_URL}/analyze
+  | field name for the file: resume
+  v
+server/routes/analyze.js
+  |
+  +-- Multer reads the PDF into memory
+  +-- Validates name, email, job description, and PDF
+  +-- pdf-parse extracts resume text
+  +-- Finds keywords in the job description
+  +-- Searches for those keywords in the resume
+  +-- Calculates the match score
+  +-- Gets AI or fallback explanations
+  +-- Saves the result in candidateStore.js
+  v
+App.jsx displays the result page
+```
+
+The PDF is not written to disk. Multer uses memory storage. The server stores the original filename and extracted text in memory, so all candidate data disappears when the server restarts.
+
+### API routes
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/health` | Confirms that the backend is running. |
+| POST | `/api/analyze` | Receives candidate fields and a PDF, then returns the analysis. |
+| POST | `/api/admin/login` | Checks the configured admin username and password. |
+| GET | `/api/candidates` | Returns all candidates without full resume text and job description. |
+| GET | `/api/candidates/:id` | Returns one complete candidate analysis. |
+
+The frontend uses the same `API` constant for every request. Therefore, changing `VITE_API_URL` changes the backend used by analysis, login, candidate listing, and candidate details.
+
+## 9. Environment variables
+
+### Frontend: `client/.env`
+
+```text
+VITE_API_URL=http://localhost:5000/api
+```
+
+Only public configuration belongs in a Vite variable. Never put an AI key, password, or database credential in a variable beginning with `VITE_`, because Vite includes it in the browser build.
+
+### Backend: `server/.env`
+
+```text
+PORT=5000
+FRONTEND_URL=https://YOUR-NETLIFY-SITE.netlify.app
+ADMIN_USERNAME=your-admin-username
+ADMIN_PASSWORD=your-strong-admin-password
+AI_API_KEY=
+AI_API_URL=https://api.openai.com/v1/chat/completions
+AI_MODEL=gpt-4o-mini
+```
+
+`FRONTEND_URL` may contain more than one comma-separated frontend origin. Local development origins on ports 5173 are allowed automatically. The backend credentials and AI key stay on the server.
+
+## 10. Running locally
+
+From the project root, open two terminals.
+
+Backend:
+
+```powershell
+cd server
+npm install
+copy .env.example .env
+npm run dev
+```
+
+Frontend:
+
+```powershell
+cd client
+npm install
+copy .env.example .env
+npm run dev
+```
+
+Open the Vite URL, normally `http://localhost:5173`. Test the backend separately at `http://localhost:5000/api/health`.
+
+## 11. Deployment explanation
+
+### Netlify frontend
+
+- Base directory: `client`
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Environment variable: `VITE_API_URL=https://YOUR-RENDER-SERVICE.onrender.com/api`
+
+The `client/public/_redirects` file contains `/* /index.html 200`, which makes Netlify send browser routes to the React entry page instead of returning a 404.
+
+### Render backend
+
+- The root `render.yaml` file defines the service configuration, including `server` as the root directory and `/api/health` as the health check.
+- Root directory: `server`
+- Build command: `npm install`
+- Start command: `npm start`
+- `FRONTEND_URL`: the exact Netlify site URL
+- `ADMIN_USERNAME` and `ADMIN_PASSWORD`: production admin credentials
+- Optional `AI_API_KEY`, `AI_API_URL`, and `AI_MODEL`
+
+Render supplies `PORT`. The server listens on `0.0.0.0`, which allows the hosted service to receive traffic.
+
+### Deployment request path
+
+If the Render service URL is `https://resume-api.onrender.com`, the Netlify variable must be:
+
+```text
+VITE_API_URL=https://resume-api.onrender.com/api
+```
+
+The analyzer then calls `https://resume-api.onrender.com/api/analyze`, and the other frontend requests use the same `/api` base.
+
+## 12. Important limitations
+
+- Candidate data is temporary in-memory data, not a permanent database.
+- The admin login is a basic credential check and does not create a session or token.
+- Scanned image PDFs are not processed because OCR is not included.
+- The score is keyword matching, not a trained machine-learning model.
+- The optional AI service affects explanations only; it does not calculate the match score.
