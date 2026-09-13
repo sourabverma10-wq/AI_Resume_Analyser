@@ -3,6 +3,7 @@ import multer from 'multer';
 import pdfParse from 'pdf-parse';
 import { createCandidate } from '../services/candidateStore.js';
 import { getAiExplanation } from '../services/aiAnalyzer.js';
+import { findJob } from '../jobs/index.js';
 
 const router = express.Router();
 const upload = multer({
@@ -24,14 +25,16 @@ function findImportantKeywords(jobDescription) {
 
 router.post('/', upload.single('resume'), async (request, response) => {
   try {
-    const { name, email, phone = '', jobDescription } = request.body;
-    if (!name?.trim() || !email?.trim() || !jobDescription?.trim()) return response.status(400).json({ message: 'Name, email, and job description are required.' });
+    const { name, email, phone = '', jobId } = request.body;
+    const job = findJob(jobId);
+    if (!name?.trim() || !email?.trim() || !job) return response.status(400).json({ message: 'Name, email, and a valid job are required.' });
     if (!emailPattern.test(email)) return response.status(400).json({ message: 'Please enter a valid email address.' });
     if (!request.file) return response.status(400).json({ message: 'Please upload a PDF resume.' });
     const pdf = await pdfParse(request.file.buffer);
     const resumeText = pdf.text.trim();
     if (!resumeText) return response.status(400).json({ message: 'The PDF does not contain readable text.' });
 
+    const jobDescription = job.description;
     const keywords = findImportantKeywords(jobDescription);
     const resume = normalize(resumeText);
     const matchingSkills = keywords.filter(keyword => resume.includes(keyword));

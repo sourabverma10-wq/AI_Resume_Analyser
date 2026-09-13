@@ -5,6 +5,7 @@ import multer from 'multer';
 import analyzeRoutes from './routes/analyze.js';
 import candidateRoutes from './routes/candidates.js';
 import adminRoutes from './routes/admin.js';
+import jobsRoutes from './routes/jobs.js';
 
 const app = express();
 const asMiddleware = routeModule => routeModule?.default || routeModule;
@@ -29,6 +30,7 @@ app.get('/api/health', (request, response) => response.json({ status: 'ok' }));
 app.use('/api/analyze', asMiddleware(analyzeRoutes));
 app.use('/api/candidates', asMiddleware(candidateRoutes));
 app.use('/api/admin', asMiddleware(adminRoutes));
+app.use('/api/jobs', asMiddleware(jobsRoutes));
 app.use((error, request, response, next) => {
   if (error instanceof multer.MulterError || error.message?.includes('File too large')) return response.status(400).json({ message: 'PDF must be smaller than 5 MB.' });
   if (error.message?.includes('Origin is not allowed by CORS')) return response.status(403).json({ message: 'The deployed frontend is not allowed to access this API. Check FRONTEND_URL in Netlify environment variables.' });
