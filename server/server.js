@@ -7,6 +7,7 @@ import candidateRoutes from './routes/candidates.js';
 import adminRoutes from './routes/admin.js';
 
 const app = express();
+const asMiddleware = routeModule => routeModule?.default || routeModule;
 const localOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
 const configuredOrigins = (process.env.FRONTEND_URL || '')
   .split(',')
@@ -22,9 +23,9 @@ app.use(cors({
 }));
 app.use(express.json());
 app.get('/api/health', (request, response) => response.json({ status: 'ok' }));
-app.use('/api/analyze', analyzeRoutes);
-app.use('/api/candidates', candidateRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/analyze', asMiddleware(analyzeRoutes));
+app.use('/api/candidates', asMiddleware(candidateRoutes));
+app.use('/api/admin', asMiddleware(adminRoutes));
 app.use((error, request, response, next) => {
   if (error instanceof multer.MulterError || error.message?.includes('File too large')) return response.status(400).json({ message: 'PDF must be smaller than 5 MB.' });
   response.status(500).json({ message: 'Something went wrong on the server.' });
