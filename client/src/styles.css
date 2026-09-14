@@ -16,6 +16,74 @@
 	--shadow: 0 18px 55px rgba(0, 0, 0, .3);
 }
 
+/* Keep the result surface readable after the legacy rules below. */
+.panel,
+.table-wrap {
+	background: var(--surface);
+	border-color: var(--line);
+	box-shadow: var(--shadow);
+}
+
+label,
+h3,
+.detail-meta b {
+	color: #eaf4ff;
+}
+
+input,
+textarea,
+select {
+	color: #eef6ff;
+	background: rgba(3, 20, 53, .7);
+	border-color: rgba(93, 156, 230, .45);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+	border-color: var(--cyan);
+	background: rgba(5, 29, 70, .95);
+	box-shadow: 0 0 0 4px rgba(39, 231, 255, .14);
+}
+
+.score strong {
+	color: var(--cyan);
+	text-shadow: 0 0 22px rgba(39, 231, 255, .35);
+}
+
+.score-bar {
+	background: rgba(139, 174, 220, .2);
+}
+
+.score-bar i {
+	background: linear-gradient(90deg, #168cff, #27e7ff, #a94dff);
+}
+
+.tag {
+	background: rgba(22, 140, 255, .17);
+	color: #8edcff;
+	border: 1px solid rgba(39, 231, 255, .22);
+}
+
+.missing .tag {
+	background: rgba(169, 77, 255, .17);
+	color: #dfb5ff;
+	border-color: rgba(169, 77, 255, .35);
+}
+
+th {
+	background: rgba(3, 20, 53, .65);
+}
+
+tbody tr:hover {
+	background: rgba(22, 140, 255, .1);
+}
+
+footer {
+	background: #030d25;
+	border-top-color: rgba(39, 231, 255, .18);
+}
+
 * { box-sizing: border-box; }
 
 body {
@@ -95,7 +163,7 @@ h1 { font: 700 clamp(40px, 6vw, 72px) / 1.02 'Space Grotesk'; letter-spacing: -.
 	box-shadow: var(--shadow);
 }
 form.panel { max-width: 880px; margin-top: 36px; }
-label { display: block; color: #d8e8ff; font-size: 13px; font-weight: 700; margin-bottom: 23px; }
+label { display: block; color: #39465c; font-size: 13px; font-weight: 700; margin-bottom: 23px; }
 small { color: var(--muted); font-weight: 400; }
 
 input, textarea, select {
@@ -103,7 +171,7 @@ input, textarea, select {
 	width: 100%;
 	border: 1px solid #cbd5e2;
 	border-radius: 8px;
-	color: #eef6ff;
+	color: var(--navy);
 	padding: 13px 14px;
 	margin-top: 9px;
 	outline: none;
@@ -130,7 +198,7 @@ select { appearance: auto; }
 .score-bar i { display: block; height: 100%; background: linear-gradient(90deg, #168cff, #27e7ff, #a94dff); border-radius: inherit; }
 .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .list-block + .list-block { border-top: 1px solid var(--line); margin-top: 26px; padding-top: 23px; }
-h3 { color: #fff; margin: 0 0 15px; font: 600 17px 'Space Grotesk'; }
+h3 { margin: 0 0 15px; font: 600 17px 'Space Grotesk'; }
 .tag { display: inline-block; background: rgba(22, 140, 255, .17); color: #8edcff; border: 1px solid rgba(39, 231, 255, .22); border-radius: 6px; padding: 7px 10px; margin: 0 7px 7px 0; font-size: 13px; }
 .missing .tag { background: rgba(169, 77, 255, .17); color: #dfb5ff; border-color: rgba(169, 77, 255, .35); }
 .muted, .hint { color: var(--muted); font-size: 14px; }
@@ -149,7 +217,7 @@ tr:last-child td { border: 0; }
 .table-score { color: #5af0c1; font-weight: 700; }
 .table-empty { padding: 20px; }
 .detail-meta { display: flex; gap: 38px; margin: 28px 0; color: var(--muted); font-size: 14px; }
-.detail-meta b { display: block; color: #eaf4ff; margin-bottom: 5px; }
+.detail-meta b { display: block; color: var(--navy); margin-bottom: 5px; }
 .job { margin-top: 24px; }
 .job p { color: var(--muted); line-height: 1.7; white-space: pre-wrap; }
 
@@ -629,4 +697,72 @@ footer span {
 		display: block;
 		margin: 5px 0 0;
 	}
+}
+
+/* Keep the result surface readable after the legacy rules below. */
+.panel,
+.table-wrap {
+	background: var(--surface);
+	border-color: var(--line);
+	box-shadow: var(--shadow);
+}
+
+label,
+h3,
+.detail-meta b {
+	color: #eaf4ff;
+}
+
+input,
+textarea,
+select {
+	color: #eef6ff;
+	background: rgba(3, 20, 53, .7);
+	border-color: rgba(93, 156, 230, .45);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+	border-color: var(--cyan);
+	background: rgba(5, 29, 70, .95);
+	box-shadow: 0 0 0 4px rgba(39, 231, 255, .14);
+}
+
+.score strong {
+	color: var(--cyan);
+	text-shadow: 0 0 22px rgba(39, 231, 255, .35);
+}
+
+.score-bar {
+	background: rgba(139, 174, 220, .2);
+}
+
+.score-bar i {
+	background: linear-gradient(90deg, #168cff, #27e7ff, #a94dff);
+}
+
+.tag {
+	background: rgba(22, 140, 255, .17);
+	color: #8edcff;
+	border: 1px solid rgba(39, 231, 255, .22);
+}
+
+.missing .tag {
+	background: rgba(169, 77, 255, .17);
+	color: #dfb5ff;
+	border-color: rgba(169, 77, 255, .35);
+}
+
+th {
+	background: rgba(3, 20, 53, .65);
+}
+
+tbody tr:hover {
+	background: rgba(22, 140, 255, .1);
+}
+
+footer {
+	background: #030d25;
+	border-top-color: rgba(39, 231, 255, .18);
 }
